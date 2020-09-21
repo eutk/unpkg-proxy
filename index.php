@@ -5,9 +5,15 @@ if (!in_array('curl', get_loaded_extensions())) {
         }
 */
 $sn = $_SERVER['SCRIPT_NAME'];
-$self = $_SERVER['PHP_SELF'];
+$self = $_SERVER['REQUEST_URI'];
 $query = ltrim($_SERVER['QUERY_STRING'], '/');
-$regexp = '/' . addcslashes($sn,'/') . '\/(.+)$/';
+
+if ($is_rewrite_on = substr_count($_SERVER['PATH_TRANSLATED'],'redirect:')>0){
+    $regexp = '/\/(.+)/';
+}else{
+    $regexp = '/' . addcslashes($sn,'/') . '\/(.+)$/';
+}
+
 header("Pragma: cache");
 header('Access-Control-Allow-Origin:*');
 header('Access-Control-Max-Age: 86400');  //1day
@@ -17,13 +23,15 @@ $offset = 30*60*60*24; // cache 1 month
 $ExpStr = "Expires: ".gmdate("D, d M Y H:i:s", time() + $offset)." GMT";
 header($ExpStr);
 */
+
+//@ print_r($_SERVER);echo "<br />";
+
 if (str_split($_SERVER['QUERY_STRING'])[0]=='/') {
     header("Location: {$sn}/{$query}");
     die();
 } else {
     if (preg_match($regexp, $self, $matches)) {
         $target = "https://unpkg.com/" . $matches[1];
-        //@ print_r($_SERVER);echo "<br />";
     } else {
         if($show_html = @file_get_contents('unpkg.html')){
             // 获取本地文件，否则获取unpkg界面
@@ -52,7 +60,7 @@ if ($errno = curl_errno($ch)) {
     $redirect_url = $info['redirect_url'];
     if ($redirect_url) { // 转发跳转
         preg_match("/^https:\/\/unpkg.com\/(.+)$/", $redirect_url, $matches)
-         ? (substr_count($_SERVER['PATH_TRANSLATED'],'redirect:')>0 ? header("Location: /{$matches[1]}") : header("Location: {$sn}/{$matches[1]}"))
+         ? ( $is_rewrite_on ? header("Location: /{$matches[1]}") : header("Location: {$sn}/{$matches[1]}"))
          : die("An error occurred while redirecting \n Detail: $redirect_url");
     }
     $type = $info['content_type'];
@@ -60,9 +68,8 @@ if ($errno = curl_errno($ch)) {
 }
 curl_close($ch);
 if ($type == "text/html; charset=utf-8") { // 添加base标签
-    substr_count($_SERVER['PATH_TRANSLATED'],'redirect:')>0
-    ? ''
-    : $res = "<base href=\"{$self}\">{$res}";
+    $is_rewrite_on ? ''
+    : $res = str_replace("=\"/", "=\"$sn/", $res);  //"<base href=\"{$self}\">{$res}"
     // $res = str_replace('<head>', "<head><base href=\"{$self}\">", $res);
 }
 header("Cache-Control: public, max-age=31536000");  //1month
