@@ -6,20 +6,20 @@ if (!in_array('curl', get_loaded_extensions())) {
 */
 $sn = $_SERVER['SCRIPT_NAME'];
 $self = $_SERVER['PHP_SELF'];
-$regexp = '/' . str_replace('/', '\/', $sn) . '\/(.+)$/';
+$query = ltrim($_SERVER['QUERY_STRING'], '/');
+$regexp = '/' . addcslashes($sn,'/') . '\/(.+)$/';
 header("Pragma: cache");
 header('Access-Control-Allow-Origin:*');
 header('Access-Control-Max-Age: 86400');  //1day
-header("Cache-Control: public, max-age=31536000");  //1month
 /*
 header("Vary: Accept-Encoding");
 $offset = 30*60*60*24; // cache 1 month
 $ExpStr = "Expires: ".gmdate("D, d M Y H:i:s", time() + $offset)." GMT";
 header($ExpStr);
 */
-if ($_SERVER['QUERY_STRING']) {
-    header("Location: {$sn}/{$_SERVER['QUERY_STRING']}");
-    die("moved");
+if (str_split($_SERVER['QUERY_STRING'])[0]=='/') {
+    header("Location: {$sn}/{$query}");
+    die();
 } else {
     if (preg_match($regexp, $self, $matches)) {
         $target = "https://unpkg.com/" . $matches[1];
@@ -53,7 +53,7 @@ if ($errno = curl_errno($ch)) {
     if ($redirect_url) { // 转发跳转
         preg_match("/^https:\/\/unpkg.com\/(.+)$/", $redirect_url, $matches)
          ? (substr_count($_SERVER['PATH_TRANSLATED'],'redirect:')>0 ? header("Location: /{$matches[1]}") : header("Location: {$sn}/{$matches[1]}"))
-         : die("error");
+         : die("An error occurred while redirecting \n Detail: $redirect_url");
     }
     $type = $info['content_type'];
     header("Content-Type:" . $type);
@@ -65,6 +65,7 @@ if ($type == "text/html; charset=utf-8") { // 添加base标签
     : $res = "<base href=\"{$self}\">{$res}";
     // $res = str_replace('<head>', "<head><base href=\"{$self}\">", $res);
 }
+header("Cache-Control: public, max-age=31536000");  //1month
 header("strict-transport-security: max-age=31536000; includeSubDomains; preload");
 header("x-content-type-options: nosniff");
 echo $res;
