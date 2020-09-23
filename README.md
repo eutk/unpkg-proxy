@@ -1,8 +1,6 @@
 # UNPKG PROXY
 
-伪静态是可选的，若启用，必须将index.php置于根目录  
-
-否则在apache环境下请将.htaccess删除  
+伪静态是可选的，若启用(修改index.php以开启)，必须将index.php置于根目录  
 
 若不启用伪静态，可将index.php以任意文件名置于任意目录  
 

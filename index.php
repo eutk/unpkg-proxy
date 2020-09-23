@@ -1,14 +1,22 @@
 <?php
+
 /* 检测curl(可选)
 if (!in_array('curl', get_loaded_extensions())) {
             throw new Exception('You need to install cURL, see: http://curl.haxx.se/docs/install.html');
         }
 */
+
+// 伪静态设置
+$is_rewrite_on = false;
+
+
+
+/* program start */
 $sn = $_SERVER['SCRIPT_NAME'];
 $self = $_SERVER['REQUEST_URI'];
 $query = ltrim($_SERVER['QUERY_STRING'], '/');
 
-if ($is_rewrite_on = substr_count($_SERVER['PATH_TRANSLATED'],'redirect:')>0){
+if ($is_rewrite_on){
     $regexp = '/\/(.+)/';
 }else{
     $regexp = '/' . addcslashes($sn,'/') . '\/(.+)$/';
@@ -27,7 +35,7 @@ header($ExpStr);
 //@ print_r($_SERVER);echo "<br />";
 
 if (str_split($_SERVER['QUERY_STRING'])[0]=='/') {
-    header("Location: {$sn}/{$query}");
+    $is_rewrite_on ? header("Location: /{$query}") : header("Location: {$sn}/{$query}");
     die();
 } else {
     if (preg_match($regexp, $self, $matches)) {
@@ -36,8 +44,10 @@ if (str_split($_SERVER['QUERY_STRING'])[0]=='/') {
         if($show_html = @file_get_contents('unpkg.html')){
             // 获取本地文件，否则获取unpkg界面
             echo $show_html;
-            }else{
-                echo str_replace('="/', '="./', file_get_contents('https://unpkg.com'));
+            } elseif ($is_rewrite_on) {
+                echo file_get_contents('https://unpkg.com');
+            } else {
+                echo str_replace('="/', '="./?/', file_get_contents('https://unpkg.com'));
             }
     }
 }
