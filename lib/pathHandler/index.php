@@ -1,10 +1,15 @@
 <?php
-require_once("main.php");  // 引入库文件
-\pathHandler\redirect();  // 处理$_GET失效问题
+/**
+ * Script for test
+*/
+require_once("./main.php");
+\pathHandler\redirect();
 
-function get_path($arg=0){
-    return \pathHandler\get($arg);
-}
+$path0 = \pathHandler\get(0);
+$path1 = \pathHandler\get(1);
 
-echo "no query:  ".get_path()."<br>"."has query: ".get_path(1)."<br>";
- print_r($_SERVER);
+echo "no querystring $path0";
+echo PHP_EOL;
+echo "has querystring $path1";
+echo PHP_EOL;
+print_r($_SERVER);
