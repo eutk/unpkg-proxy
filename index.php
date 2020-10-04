@@ -6,9 +6,8 @@ if (!in_array('curl', get_loaded_extensions())) {
         }
 */
 
-// 伪静态设置
+/* 伪静态设置 */
 $is_rewrite_on = false;
-
 
 
 /* program start */
@@ -77,7 +76,7 @@ if ($errno = curl_errno($ch)) {
     header("Content-Type:" . $type);
 }
 curl_close($ch);
-if ($type == "text/html; charset=utf-8") { // 添加base标签
+if ($type == "text/html; charset=utf-8") {
     $is_rewrite_on ? ''
     : $res = str_replace("=\"/", "=\"$sn/", $res);  //"<base href=\"{$self}\">{$res}"
     // $res = str_replace('<head>', "<head><base href=\"{$self}\">", $res);
