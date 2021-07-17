@@ -1,12 +1,14 @@
 <?php
 /**
  * Then no difficulty in handling path.
+ * If rewrite engine is on, request must handled by '/index.php' but not only '/' ,correct statement like this: RewriteRule ^(.*)$ index.php [L,E=PATH_INFO:$1]
+ * returned query starts with '/'
  *
  * @author    CrazyWhite <moe@mailo.com>
  * @copyright 2021 (c) CrazyWhite - pathHandler
  * @license   https://opensource.org/licenses/MIT - The MIT License (MIT)
  * @link      https://github.com/Crazy-White/unpkg-proxy/tree/master/lib/pathHandler
- * @since     1.0.2
+ * @since     1.1.0
  */
 
 namespace pathHandler;
@@ -17,56 +19,51 @@ function redirect()
     'localhost/sn.php?/path/to/file?fakeQuery'  to  'localhost/sn.php?/path/to/file&fakeQuery'
     then $_GET works
     */
-    $uri = $_SERVER['REQUEST_URI'];
-    $query = $_SERVER['QUERY_STRING'];
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $query_string = $_SERVER['QUERY_STRING'];
 
-    if (strpos($query, '?') > 0) {
-        $fixed_query = str_replace('?', '&', $query);
-        header('Location: ' . str_replace($query, $fixed_query, $uri));
+    if (strpos($query_string, '?') > 0) {
+        $fixed_query = str_replace('?', '&', $query_string);
+        header('Location: ' . str_replace($query_string, $fixed_query, $request_uri));
         die();
     }
 }
 
 function get($is_include_query = false)
 {
-    $pi = $_SERVER['PATH_INFO'];
-    $uri = $_SERVER['REQUEST_URI'];
-    $query = $_SERVER['QUERY_STRING'];
-    $sn = $_SERVER['SCRIPT_NAME'];
-
-
-    if (isset($pi) && strlen($pi) > 0) {
-        /* for path_info&rewrite */
-        if (!$is_include_query) {
-            return $pi;
-        }
-
-        if (startsWith($uri, $sn)) {
-            return substr($uri, strlen($sn));
-        }
-    }
-
-    if ($query[0] === '/') {
+    $path_info = $_SERVER['REDIRECT_PATH_INFO'] ? $_SERVER['REDIRECT_PATH_INFO'] : $_SERVER['PATH_INFO'];
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $query_string = $_SERVER['QUERY_STRING'];
+    $script_name = $_SERVER['SCRIPT_NAME'];
+    
+    if ($query_string[0] === '/') {  //  localhost/[filename.php]?/query
         /* for querystring */
         if ($is_include_query) {
-            return $query;
+            return $query_string;
         } else {
-            $p = strpos($query, '?');
+            $p = strpos($query_string, '?');
             if (!$p) {
-                $p = strpos($query, '&');
+                $p = strpos($query_string, '&');
                 if (!$p) {
-                    return $query;
+                    return $query_string;
                 }
             }
-            return substr($query, 0, $p);
+            return substr($query_string, 0, $p);
         }
     }
 
-    if (isset($uri)) {
-        return $uri;
+$computed = '/';
+    if(startsWith($path_info,'/')) 
+    {
+        $computed = $path_info;
     }
-
-    return '/';
+    else{
+         $computed = '/'.$path_info;
+    }
+    if(!$is_include_query) {
+        $computed = str_replace('?'.$query_string, '', $computed);
+    }
+    return $computed;
 }
 
 function startsWith($haystack, $needle)
