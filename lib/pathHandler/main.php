@@ -1,13 +1,14 @@
 <?php
 /**
- * Then no difficulty in handling path.
- * If rewrite engine is on, request must handled by '/index.php' but not only '/' ,correct statement like this: RewriteRule ^(.*)$ index.php [L,E=PATH_INFO:$1]
- * returned query starts with '/'
+ * Handle path with ease
+ * If rewrite engine is on, request must handled by '/index.php' but not only '/'
+ * correct statement like this: RewriteRule ^(.*)$ index.php [L,E=PATH_INFO:$1]
+ * returned query will starts with '/'
  *
- * @author    CrazyWhite <moe@mailo.com>
- * @copyright 2021 (c) CrazyWhite - pathHandler
+ * @author    YieldRay <moe@mailo.com>
+ * @copyright 2021 (c) YieldRay - pathHandler
  * @license   https://opensource.org/licenses/MIT - The MIT License (MIT)
- * @link      https://github.com/Crazy-White/unpkg-proxy/tree/master/lib/pathHandler
+ * @link      https://github.com/YieldRay/unpkg-proxy/tree/master/lib/pathHandler
  * @since     1.1.0
  */
 
